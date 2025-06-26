@@ -16,43 +16,43 @@ const app = new Hono();
 app.use("*", logger());
 app.use(secureHeaders());
 app.use(
-	"*",
-	cors({
-		origin: ["*"],
-		allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization"],
-		exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
-		credentials: true,
-		maxAge: 600,
-	}),
+  "*",
+  cors({
+    origin: ["*"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
+    credentials: true,
+    maxAge: 600,
+  })
 );
 app.onError(errorHandlerMiddleware);
 
 app.use("/api/v1/*", async (c: Context, next: Next) => {
-	const path = c.req.path;
+  const path = c.req.path;
 
-	//* Skip auth routes
-	if (path === "/api/v1/auth/login" || path === "/api/v1/auth/register") {
-		return next();
-	}
+  //* Skip auth routes
+  if (path === "/api/v1/auth/login" || path === "/api/v1/auth/register") {
+    return next();
+  }
 
-	return jwt({
-		secret: JWT_SECRET as string,
-	})(c, next);
+  return jwt({
+    secret: JWT_SECRET as string,
+  })(c, next);
 });
 
 routes.forEach((route) => {
-	app.route("/api/v1", route);
+  app.route("/api/v1", route);
 });
 
 connectionToDatabase().then(() => {
-	serve(
-		{
-			fetch: app.fetch,
-			port: Number(PORT),
-		},
-		(info) => {
-			console.log(`Server is running on http://localhost:${info.port}`);
-		},
-	);
+  serve(
+    {
+      fetch: app.fetch,
+      port: Number(PORT),
+    },
+    (info) => {
+      console.log(`Server is running on http://localhost:${info.port}`);
+    }
+  );
 });
