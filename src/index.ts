@@ -8,6 +8,7 @@ import { jwt } from "hono/jwt";
 import { PORT, JWT_SECRET } from "./config/env";
 import connectionToDatabase from "./config/database";
 import { routes } from "./controllers/routes";
+import errorHandlerMiddleware from "./middlewares/error-handler";
 
 const app = new Hono();
 
@@ -25,6 +26,7 @@ app.use(
 		maxAge: 600,
 	}),
 );
+app.onError(errorHandlerMiddleware);
 
 app.use("/api/v1/*", async (c: Context, next: Next) => {
 	const path = c.req.path;
